@@ -76,14 +76,48 @@ void store_callback(lcb_t instance,
                     const void *cookie,
                     lcb_storage_t operation,
                     lcb_error_t error,
-                    const lcb_store_resp_t *item)
+                    const lcb_store_resp_t *resp)
 {
-
-    (void)instance; (void)operation;
+    (void)operation;
     struct libcouchbase_callback *cb;
     cb = (struct libcouchbase_callback *)cookie;
     cb->error = error;
-    cb->cas = item->v.v0.cas;
+    cb->cas = resp->v.v0.cas;
+
+    if (error == LCB_SUCCESS) {
+        lcb_durability_cmd_t cmd;
+        const lcb_durability_cmd_t *cmds[1];
+        lcb_durability_opts_t opts;
+        lcb_error_t ret;
+
+        memset(&opts, 0, sizeof(opts));
+        memset(&cmd, 0, sizeof(cmd));
+        cmds[0] = &cmd;
+
+        opts.v.v0.persist_to = 1;
+        opts.v.v0.replicate_to = -1;
+        opts.v.v0.cap_max = 1;
+
+        cmd.v.v0.key = resp->v.v0.key;
+        cmd.v.v0.nkey = resp->v.v0.nkey;
+
+        ret = lcb_durability_poll(instance, cookie, &opts, 1, cmds);
+
+        if (ret != LCB_SUCCESS) {
+            cb->error = ret;
+        }
+    }
+}
+
+void durability_callback(lcb_t instance,
+                         const void *cookie,
+                         lcb_error_t error,
+                         const lcb_durability_resp_t *resp)
+{
+    (void)instance;
+    struct libcouchbase_callback *cb;
+    cb = (struct libcouchbase_callback *)cookie;
+    cb->error = error;
 }
 
 void remove_callback(lcb_t instance,

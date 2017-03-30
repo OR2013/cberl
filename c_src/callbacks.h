@@ -54,6 +54,11 @@ void store_callback(lcb_t instance,
                     lcb_error_t error,
                     const lcb_store_resp_t *item);
 
+void durability_callback(lcb_t instance,
+                         const void *cookie,
+                         lcb_error_t err,
+                         const lcb_durability_resp_t *resp);
+
 void remove_callback(lcb_t instance,
                      const void *cookie,
                      lcb_error_t error,

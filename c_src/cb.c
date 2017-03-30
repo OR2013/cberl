@@ -83,6 +83,7 @@ ERL_NIF_TERM cb_connect(ErlNifEnv* env, handle_t* handle, void* obj)
 
     (void)lcb_set_get_callback(handle->instance, get_callback);
     (void)lcb_set_store_callback(handle->instance, store_callback);
+    (void)lcb_set_durability_callback(handle->instance, durability_callback);
     (void)lcb_set_unlock_callback(handle->instance, unlock_callback);
     (void)lcb_set_touch_callback(handle->instance, touch_callback);
     (void)lcb_set_arithmetic_callback(handle->instance, arithmetic_callback);
