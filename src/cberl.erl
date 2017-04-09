@@ -214,8 +214,11 @@ unlock(PoolPid, Key, Cas) ->
 -spec store(pid(), operation_type(), key(), value(), atom(),
             integer(), integer()) -> ok | {error, _}.
 store(PoolPid, Op, Key, Value, TranscoderOpts, Exp, Cas) ->
-    execute(PoolPid, {store, Op, Key, Value,
-                       TranscoderOpts, Exp, Cas}).
+    case execute(PoolPid, {mstore, Op, [Key], [Value],
+                       TranscoderOpts, Exp, Cas}) of
+        {ok, [{_, Result}]} -> Result;
+        {error, Reason} -> {error, Reason}
+    end.
 
 %% @doc get the value for the given key
 %% Instance libcouchbase instance to use
@@ -450,4 +453,3 @@ query_arg({startkey, V}) when is_list(V) -> string:join(["startkey", V], "=");
 query_arg({startkey_docid, V}) when is_list(V) -> string:join(["startkey_docid", V], "=").
 
 view_error(Error) -> list_to_atom(binary_to_list(Error)).
-

@@ -30,8 +30,8 @@ NIF(cberl_nif_new)
 
     handle->calltable[CMD_CONNECT]         = cb_connect;
     handle->args_calltable[CMD_CONNECT]    = cb_connect_args;
-    handle->calltable[CMD_STORE]           = cb_store;
-    handle->args_calltable[CMD_STORE]      = cb_store_args;
+    handle->calltable[CMD_MSTORE]          = cb_mstore;
+    handle->args_calltable[CMD_MSTORE]     = cb_mstore_args;
     handle->calltable[CMD_MGET]            = cb_mget;
     handle->args_calltable[CMD_MGET]       = cb_mget_args;
     handle->calltable[CMD_UNLOCK]          = cb_unlock;
@@ -115,13 +115,13 @@ NIF(cberl_nif_control)
 NIF(cberl_nif_destroy) {
     handle_t * handle;
     void* resp;
-    assert_badarg(enif_get_resource(env, argv[0], cberl_handle, (void **) &handle), env);      
+    assert_badarg(enif_get_resource(env, argv[0], cberl_handle, (void **) &handle), env);
     queue_put(handle->queue, NULL); // push NULL into our queue so the thread will join
     enif_thread_join(handle->thread, &resp);
     queue_destroy(handle->queue);
     enif_thread_opts_destroy(handle->thread_opts);
     lcb_destroy(handle->instance);
-    enif_release_resource(handle); 
+    enif_release_resource(handle);
     return A_OK(env);
 }
 

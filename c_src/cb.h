@@ -11,16 +11,18 @@ typedef struct connect_args {
     char* bucket;
 } connect_args_t;
 
-typedef struct store_args {
+typedef struct mstore_args {
     int operation;
-    unsigned int nkey;
+    unsigned int numkeys;
+    void** keys;
+    size_t* nkeys;
+    unsigned int numvalues;
+    void** values;
+    lcb_size_t* nvalues;
     lcb_uint32_t flags;
     int exp;
     lcb_cas_t cas;
-    void * key;
-    void * bytes;
-    lcb_size_t nbytes;
-} store_args_t;
+} mstore_args_t;
 
 typedef struct mget_args {
     unsigned int numkeys;
@@ -49,7 +51,7 @@ typedef struct arithmetic_args {
     int64_t delta;
     uint64_t exp;
     int create;
-    uint64_t initial; 
+    uint64_t initial;
 } arithmetic_args_t;
 
 typedef struct remove_args_t {
@@ -84,8 +86,8 @@ typedef struct n1ql_param {
 
 void* cb_connect_args(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM cb_connect(ErlNifEnv* env, handle_t* handle, void* obj);
-void* cb_store_args(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
-ERL_NIF_TERM cb_store(ErlNifEnv* env, handle_t* handle, void* obj);
+void* cb_mstore_args(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
+ERL_NIF_TERM cb_mstore(ErlNifEnv* env, handle_t* handle, void* obj);
 void* cb_mget_args(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM cb_mget(ErlNifEnv* env, handle_t* handle, void* obj);
 void* cb_unlock_args(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);

@@ -84,9 +84,9 @@ handle_call({unlock, Key, Cas}, _From, State) ->
         {error, _} = E -> {false, E}
     end,
     {reply, Reply, State#instance{connected = Connected}};
-handle_call({store, Op, Key, Value, TranscoderOpts, Exp, Cas}, _From, State) ->
+handle_call({mstore, Op, Keys, Values, TranscoderOpts, Exp, Cas}, _From, State) ->
     {Connected, Reply} = case connect(State) of
-        ok -> {true, store(Op, Key, Value, TranscoderOpts, Exp, Cas, State)};
+        ok -> {true, mstore(Op, Keys, Values, TranscoderOpts, Exp, Cas, State)};
         {error, _} = E -> {false, E}
     end,
     {reply, Reply, State#instance{connected = Connected}};
@@ -203,11 +203,10 @@ unlock(Key, Cas, #instance{handle = Handle}) ->
         Reply -> Reply
     end.
 
-store(Op, Key, Value, TranscoderOpts, Exp, Cas,
+mstore(Op, Keys, Values, TranscoderOpts, Exp, Cas,
       #instance{handle = Handle, transcoder = Transcoder}) ->
-    StoreValue = Transcoder:encode_value(TranscoderOpts, Value), 
-    ok = cberl_nif:control(Handle, op(store), [operation_value(Op), Key, StoreValue, 
-                           Transcoder:flag(TranscoderOpts), Exp, Cas]),
+    StoreValues = [Transcoder:encode_value(TranscoderOpts, Value) || Value <- Values],
+    ok = cberl_nif:control(Handle, op(store), [operation_value(Op), Keys, StoreValues, Transcoder:flag(TranscoderOpts), Exp, Cas]),
     receive
         Reply -> Reply
     end.
@@ -272,7 +271,7 @@ operation_value(prepend) -> ?'CBE_PREPEND'.
 
 -spec op(atom()) -> integer().
 op(connect) -> ?'CMD_CONNECT';
-op(store) -> ?'CMD_STORE';
+op(store) -> ?'CMD_MSTORE';
 op(mget) -> ?'CMD_MGET';
 op(unlock) -> ?'CMD_UNLOCK';
 op(mtouch) -> ?'CMD_MTOUCH';

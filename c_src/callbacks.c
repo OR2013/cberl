@@ -79,34 +79,44 @@ void store_callback(lcb_t instance,
                     const lcb_store_resp_t *resp)
 {
     (void)operation;
-    struct libcouchbase_callback *cb;
-    cb = (struct libcouchbase_callback *)cookie;
-    cb->error = error;
-    cb->cas = resp->v.v0.cas;
+    struct libcouchbase_callback_m *cbm;
+    cbm = (struct libcouchbase_callback_m *)cookie;
+    cbm->ret[cbm->currKey] = malloc(sizeof(struct libcouchbase_callback));
+    cbm->ret[cbm->currKey]->key = malloc(resp->v.v0.nkey);
+    memcpy(cbm->ret[cbm->currKey]->key, resp->v.v0.key, resp->v.v0.nkey);
+    cbm->ret[cbm->currKey]->nkey = resp->v.v0.nkey;
+    cbm->ret[cbm->currKey]->error = error;
+    cbm->ret[cbm->currKey]->cas = resp->v.v0.cas;
+    cbm->currKey += 1;
+    // (void)operation;
+    // struct libcouchbase_callback *cb;
+    // cb = (struct libcouchbase_callback *)cookie;
+    // cb->error = error;
+    // cb->cas = resp->v.v0.cas;
 
-    if (error == LCB_SUCCESS) {
-        lcb_durability_cmd_t cmd;
-        const lcb_durability_cmd_t *cmds[1];
-        lcb_durability_opts_t opts;
-        lcb_error_t ret;
-
-        memset(&opts, 0, sizeof(opts));
-        memset(&cmd, 0, sizeof(cmd));
-        cmds[0] = &cmd;
-
-        opts.v.v0.persist_to = 1;
-        opts.v.v0.replicate_to = -1;
-        opts.v.v0.cap_max = 1;
-
-        cmd.v.v0.key = resp->v.v0.key;
-        cmd.v.v0.nkey = resp->v.v0.nkey;
-
-        ret = lcb_durability_poll(instance, cookie, &opts, 1, cmds);
-
-        if (ret != LCB_SUCCESS) {
-            cb->error = ret;
-        }
-    }
+    // if (error == LCB_SUCCESS) {
+    //     lcb_durability_cmd_t cmd;
+    //     const lcb_durability_cmd_t *cmds[1];
+    //     lcb_durability_opts_t opts;
+    //     lcb_error_t ret;
+    //
+    //     memset(&opts, 0, sizeof(opts));
+    //     memset(&cmd, 0, sizeof(cmd));
+    //     cmds[0] = &cmd;
+    //
+    //     opts.v.v0.persist_to = 1;
+    //     opts.v.v0.replicate_to = -1;
+    //     opts.v.v0.cap_max = 1;
+    //
+    //     cmd.v.v0.key = resp->v.v0.key;
+    //     cmd.v.v0.nkey = resp->v.v0.nkey;
+    //
+    //     ret = lcb_durability_poll(instance, cookie, &opts, 1, cmds);
+    //
+    //     if (ret != LCB_SUCCESS) {
+    //         cb->error = ret;
+    //     }
+    // }
 }
 
 void durability_callback(lcb_t instance,
